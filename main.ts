@@ -11,8 +11,12 @@ let CAR_FORWARD = 0
 let CAR_BACK = 0
 let CAR_RIGHT = 0
 let CAR_LEFT = 0
+let AGAIN = 0
+let LISTEN = 0
+let STOP_LISTEN = 0
 let lower_limit = 0
 let higher_limit = 0
+let tf = 0
 let j1_y = 0
 let j1_x = 0
 let j2_y = 0
@@ -44,8 +48,12 @@ basic.forever(function () {
     CAR_BACK = 512
     CAR_RIGHT = 1024
     CAR_LEFT = 2048
+    AGAIN = 4096
+    LISTEN = 8192
+    STOP_LISTEN = 16384
     lower_limit = 311
     higher_limit = 711
+    tf = 0
     while (true) {
         j1_y = pins.analogReadPin(AnalogPin.P0)
         j1_x = pins.analogReadPin(AnalogPin.P1)
@@ -54,42 +62,57 @@ basic.forever(function () {
         b2 = pins.digitalReadPin(DigitalPin.P15)
         command = 0
         if (j1_y < lower_limit) {
-            command = command | S2_FORWARD
-print_direction("abc")
+            command = bitwise.or(command, S2_FORWARD)
+            print_direction("j1^")
         } else if (j1_y > higher_limit) {
-            command = command | S2_BACK
-print_direction("abc")
+            command = bitwise.or(command, S2_BACK)
+            print_direction("j1v")
         }
         if (j1_x < lower_limit) {
-            command = command | S1_RIGHT
-print_direction("abc")
+            command = bitwise.or(command, S1_RIGHT)
+            print_direction("j1>")
         } else if (j1_x > higher_limit) {
-            command = command | S1_LEFT
-print_direction("abc")
+            command = bitwise.or(command, S1_LEFT)
+            print_direction("j1<")
         }
         if (j2_y < lower_limit) {
-            command = command | S3_FORWARD
-print_direction("abc")
+            command = bitwise.or(command, S3_FORWARD)
+            print_direction("j2v")
         } else if (j2_y > higher_limit) {
-            command = command | S3_BACK
-print_direction("abc")
+            command = bitwise.or(command, S3_BACK)
+            print_direction("j2^")
         }
         if (input.buttonIsPressed(Button.A)) {
-            command = command | PINCH_CLOSE
-print_direction("abc")
+            command = bitwise.or(command, PINCH_CLOSE)
+            print_direction("b1")
         } else if (input.buttonIsPressed(Button.B)) {
-            command = command | PINCH_CLOSE
-print_direction("abc")
+            command = bitwise.or(command, AGAIN)
+            print_direction("again")
+        }
+        if (input.logoIsPressed()) {
+            if (tf == 0) {
+                command = bitwise.or(command, LISTEN)
+                print_direction("again")
+                tf = 1
+            } else {
+                command = bitwise.or(command, STOP_LISTEN)
+                print_direction("again")
+                tf = 0
+            }
         }
         if (input.isGesture(Gesture.ScreenUp)) {
-            command = command | CAR_FORWARD
+            command = bitwise.or(command, CAR_FORWARD)
+            print_direction("^")
         } else if (input.isGesture(Gesture.ScreenDown)) {
-            command = command | CAR_BACK
+            command = bitwise.or(command, CAR_BACK)
+            print_direction("v")
         }
         if (input.isGesture(Gesture.TiltLeft)) {
-            command = command | CAR_RIGHT
+            command = bitwise.or(command, CAR_RIGHT)
+            print_direction("<")
         } else if (input.isGesture(Gesture.TiltRight)) {
-            command = command | CAR_LEFT
+            command = bitwise.or(command, CAR_LEFT)
+            print_direction(">")
         }
         radio.sendString("" + (command))
         basic.pause(200)

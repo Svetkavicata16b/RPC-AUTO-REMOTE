@@ -4,7 +4,8 @@
     "dependencies": {
         "core": "*",
         "radio": "*",
-        "microphone": "*"
+        "microphone": "*",
+        "pxt-bitwise": "github:RoboticsBrno/pxt-bitwise#v1.0.2"
     },
     "files": [
         "main.blocks",
