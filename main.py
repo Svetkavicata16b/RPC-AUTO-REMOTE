@@ -14,9 +14,10 @@ CAR_LEFT = 0
 AGAIN = 0
 LISTEN = 0
 STOP_LISTEN = 0
+RESET_POSITION = 0
 lower_limit = 0
 higher_limit = 0
-tf = 0
+is_listenning = 0
 j1_y = 0
 j1_x = 0
 j2_y = 0
@@ -31,7 +32,7 @@ def print_comand(command2: number):
         basic.show_number(command2)
 
 def on_forever():
-    global printing, S1_RIGHT, S1_LEFT, S2_BACK, S2_FORWARD, S3_BACK, S3_FORWARD, PINCH_OPEN, PINCH_CLOSE, CAR_FORWARD, CAR_BACK, CAR_RIGHT, CAR_LEFT, AGAIN, LISTEN, STOP_LISTEN, lower_limit, higher_limit, tf, j1_y, j1_x, j2_y, b1, b2, command
+    global printing, S1_RIGHT, S1_LEFT, S2_BACK, S2_FORWARD, S3_BACK, S3_FORWARD, PINCH_OPEN, PINCH_CLOSE, CAR_FORWARD, CAR_BACK, CAR_RIGHT, CAR_LEFT, AGAIN, LISTEN, STOP_LISTEN, RESET_POSITION, lower_limit, higher_limit, is_listenning, j1_y, j1_x, j2_y, b1, b2, command
     radio.set_group(1)
     printing = False
     S1_RIGHT = 1
@@ -49,9 +50,12 @@ def on_forever():
     AGAIN = 4096
     LISTEN = 8192
     STOP_LISTEN = 16384
+    RESET_POSITION = 32768
     lower_limit = 311
     higher_limit = 711
-    tf = 0
+    is_listenning = 0
+    pins.set_pull(DigitalPin.P14, PinPullMode.PULL_UP)
+    pins.set_pull(DigitalPin.P15, PinPullMode.PULL_UP)
     while True:
         j1_y = pins.analog_read_pin(AnalogPin.P0)
         j1_x = pins.analog_read_pin(AnalogPin.P1)
@@ -81,17 +85,20 @@ def on_forever():
             command = bitwise.or(command, PINCH_CLOSE)
             print_direction("b1")
         elif input.button_is_pressed(Button.B):
+            command = bitwise.or(command, RESET_POSITION)
+            print_direction("reset_position")
+        if b2 == 0:
             command = bitwise.or(command, AGAIN)
             print_direction("again")
-        if input.logo_is_pressed():
-            if tf == 0:
+        if b1 == 0:
+            if is_listenning == 0:
                 command = bitwise.or(command, LISTEN)
-                print_direction("again")
-                tf = 1
+                print_direction("listen")
+                is_listenning = 1
             else:
                 command = bitwise.or(command, STOP_LISTEN)
-                print_direction("again")
-                tf = 0
+                print_direction("stop_losten")
+                is_listenning = 0
         if input.is_gesture(Gesture.SCREEN_UP):
             command = bitwise.or(command, CAR_FORWARD)
             print_direction("^")

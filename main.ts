@@ -14,9 +14,10 @@ let CAR_LEFT = 0
 let AGAIN = 0
 let LISTEN = 0
 let STOP_LISTEN = 0
+let RESET_POSITION = 0
 let lower_limit = 0
 let higher_limit = 0
-let tf = 0
+let is_listenning = 0
 let j1_y = 0
 let j1_x = 0
 let j2_y = 0
@@ -51,9 +52,12 @@ basic.forever(function () {
     AGAIN = 4096
     LISTEN = 8192
     STOP_LISTEN = 16384
+    RESET_POSITION = 32768
     lower_limit = 311
     higher_limit = 711
-    tf = 0
+    is_listenning = 0
+    pins.setPull(DigitalPin.P14, PinPullMode.PullUp)
+    pins.setPull(DigitalPin.P15, PinPullMode.PullUp)
     while (true) {
         j1_y = pins.analogReadPin(AnalogPin.P0)
         j1_x = pins.analogReadPin(AnalogPin.P1)
@@ -86,18 +90,22 @@ basic.forever(function () {
             command = bitwise.or(command, PINCH_CLOSE)
             print_direction("b1")
         } else if (input.buttonIsPressed(Button.B)) {
+            command = bitwise.or(command, RESET_POSITION)
+            print_direction("reset_position")
+        }
+        if (b2 == 0) {
             command = bitwise.or(command, AGAIN)
             print_direction("again")
         }
-        if (input.logoIsPressed()) {
-            if (tf == 0) {
+        if (b1 == 0) {
+            if (is_listenning == 0) {
                 command = bitwise.or(command, LISTEN)
-                print_direction("again")
-                tf = 1
+                print_direction("listen")
+                is_listenning = 1
             } else {
                 command = bitwise.or(command, STOP_LISTEN)
-                print_direction("again")
-                tf = 0
+                print_direction("stop_losten")
+                is_listenning = 0
             }
         }
         if (input.isGesture(Gesture.ScreenUp)) {
